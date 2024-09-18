@@ -7,8 +7,11 @@ import (
 func main() {
 	r := gin.Default()
 
-	// index page
+	// serve index page
 	r.StaticFile("", "./ui/index.html")
+
+	// serve javascript webgl
+	r.StaticFile("/js/webgl.js", "./src/js/webgl.js")
 
 	r.Run("localhost:8080")
 }
