@@ -15,7 +15,7 @@ func main() {
 	r.StaticFile("", "./ui/index.html")
 
 	// serve javascript webgl
-	r.StaticFile("/js/webgl.js", "./src/js/webgl.js"))
+	r.StaticFile("/js/webgl.js", "./src/js/webgl.js")
 
 	// api
 	r.GET("/api/verticies", GetVerticies)
