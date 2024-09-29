@@ -7,11 +7,17 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/gin-contrib/pprof"
 )
+
+type PhoneOption struct {
+	Name     string
+	Filename string
+}
 
 type Phone struct {
 	Width   float32 `xml:"width"`
@@ -55,13 +61,37 @@ func main() {
 
 	// api
 	r.GET("/api/verticies", GetVerticies)
-	r.GET("/api/phone", GetPhoneDimensions)
+	r.GET("/api/phones", GetPhones)
 
 	// profiler registrations
 	pprof.Register(r)
 
 	// run web server
 	r.Run("localhost:8080")
+}
+
+func GetPhones(c *gin.Context) {
+	dir, err := os.ReadDir("phones")
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	var phoneOptions []PhoneOption
+	for i := 0; i < len(dir); i++ {
+		if dir[i].IsDir() {
+			// WHY?
+			continue
+		}
+
+		if strings.Contains(dir[i].Name(), ".xml") {
+			var option PhoneOption
+			option.Filename = dir[i].Name()
+			option.Name = strings.Replace(dir[i].Name(), ".xml", "", -1)
+			phoneOptions = append(phoneOptions, option)
+		}
+	}
+
+	c.JSON(http.StatusOK, phoneOptions)
 }
 
 func GetPhoneDimensions(c *gin.Context) {
