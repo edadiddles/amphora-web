@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Phone>
+  <width>58.57</width>
+  <length>123.83</length>
+  <height>7.12</height>
+  <Speaker>
+    <width>11.96</width>
+    <height>3.36</height>
+    <center>44.495</center>
+  </Speaker>
+</Phone>
