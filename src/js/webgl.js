@@ -223,11 +223,17 @@ function drawScene(gl, programInfo, buffers, positions) {
             offset,
         );
         gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-        
+    }
+    { 
+        const numComponents = 4;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
         gl.vertexAttribPointer(
             programInfo.attribLocations.vertexColor,
-            4,
+            numComponents,
             type,
             normalize,
             stride,
@@ -235,8 +241,8 @@ function drawScene(gl, programInfo, buffers, positions) {
         );
         gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
     }
-    gl.useProgram(programInfo.program);
     
+    gl.useProgram(programInfo.program);
     
     gl.uniformMatrix4fv(
         programInfo.uniformLocations.projectionMatrix,
