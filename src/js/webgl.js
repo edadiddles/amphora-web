@@ -1,25 +1,18 @@
 const vertexShaderSource = `
     attribute vec4 aVertexPosition;
-    attribute vec4 aVertexColor;
-
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-
-    varying mediump vec4 vColor;
+    // uniform mat4 uMatrix;
 
     void main() {
-        gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+        gl_Position = aVertexPosition;
         gl_PointSize = 1.0;
-
-        vColor = aVertexColor;
     }
 `;
 
 const fragmentShaderSource = `
-    varying mediump vec4 vColor;
+    uniform lowp vec4 uColor;
     
     void main() {
-        gl_FragColor = vColor;
+        gl_FragColor = uColor;
     }
 `;
 
@@ -98,11 +91,11 @@ function main() {
         program: shaderProgram,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
             modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+            vertexColor: gl.getUniformLocation(shaderProgram, 'uColor')
         },
     }
 
@@ -116,15 +109,13 @@ function main() {
         // Clear the color buffer with specified clear color
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
-        gl.color
-        
         for(k in positions) {
             var tPositions = positions[k];
             var tColor = colors[k];
-            const buffers = initBuffers(gl, tPositions, tColor);
+            const buffers = initBuffers(gl, tPositions);
         
             // Draw the scene
-            drawScene(gl, programInfo, buffers, tPositions);
+            drawScene(gl, programInfo, buffers, tPositions, tColor);
         }
     }, 1000);
 }
@@ -164,17 +155,11 @@ function loadShader(gl, type, source) {
     return shader;
 }
 
-function initBuffers(gl, verticies, color) {
+function initBuffers(gl, verticies) {
     const positionBuffer = initPositionBuffer(gl, verticies);
-    var colors = [];
-    for(i=0; i <= verticies.length; i+=3) {
-        colors = colors.concat(color);
-    }
-    const colorBuffer = initColorBuffer(gl, colors);
 
     return {
         position: positionBuffer,
-        color: colorBuffer,
     };
 }
 
@@ -186,27 +171,7 @@ function initPositionBuffer(gl, verticies) {
     return positionBuffer;
 }
 
-function initColorBuffer(gl, color) {
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);
-
-    return colorBuffer;
-}
-
-function drawScene(gl, programInfo, buffers, positions) {
-    const fieldOfView = 45 * Math.PI / 180;
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
-    const projectionMatrix = mat4.create();
-
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-    const modelViewMatrix = mat4.create();
-
-    mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
-
+function drawScene(gl, programInfo, buffers, positions, color) {
     {
         const numComponents = 3;
         const type = gl.FLOAT;
@@ -224,37 +189,9 @@ function drawScene(gl, programInfo, buffers, positions) {
         );
         gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
     }
-    { 
-        const numComponents = 4;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 0;
-        const offset = 0;
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.vertexColor,
-            numComponents,
-            type,
-            normalize,
-            stride,
-            offset,
-        );
-        gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
-    }
-    
     gl.useProgram(programInfo.program);
+    gl.uniform4fv(programInfo.uniformLocations.vertexColor, color);
     
-    gl.uniformMatrix4fv(
-        programInfo.uniformLocations.projectionMatrix,
-        false,
-        projectionMatrix,
-    );
-    gl.uniformMatrix4fv(
-        programInfo.uniformLocations.modelViewMatrix,
-        false,
-        modelViewMatrix,
-    );
-
     {
         const offset = 0;
         const vertexCount = positions.length;
