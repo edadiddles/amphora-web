@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"math/rand/v2"
 	"net/http"
@@ -32,6 +33,40 @@ type Speaker struct {
 	Center float32 `xml:"center"`
 }
 
+type Paraboloid struct {
+	X     float32 `json:x`
+	Y     float32 `json:y`
+	Z     float32 `json:z`
+	Angle float32 `json:angle`
+}
+
+type SlicingPlane struct {
+	Height float32 `json:height`
+}
+
+type UserRadius struct {
+	Radius float32 `json:user`
+}
+
+type Resolution struct {
+	Linear  float32 `json:linear`
+	Angular float32 `json:angular`
+}
+
+type SimulationInput struct {
+	Phone        string       `json:phoneSelector`
+	Paraboloid   Paraboloid   `json:paraboloid`
+	SlicingPlane SlicingPlane `json:slicingPlane`
+	UserRadius   UserRadius   `json:userRadius`
+	Resolution   Resolution   `json:resolution`
+}
+
+type SimulationOutput struct {
+	Phone      []float32
+	Paraboloid []float32
+	User       []float32
+}
+
 func parseXml(xmlFile string) (*Phone, error) {
 	f, err := os.Open(xmlFile)
 	if err != nil {
@@ -59,9 +94,14 @@ func main() {
 	// serve javascript webgl
 	r.StaticFile("/js/webgl.js", "./src/js/webgl.js")
 
+	// htmx
+	r.GET("/htmx/phones", HandleHtmxGetPhones)
+
 	// api
-	r.GET("/api/verticies", GetVerticies)
-	r.GET("/api/phones", GetPhones)
+	r.GET("/api/phone", GetPhoneDimensions)
+	r.GET("/api/phones", HandleApiGetPhones)
+
+	r.POST("/api/simulation", HandleApiSimulation)
 
 	// profiler registrations
 	pprof.Register(r)
@@ -70,10 +110,47 @@ func main() {
 	r.Run("localhost:8080")
 }
 
-func GetPhones(c *gin.Context) {
-	dir, err := os.ReadDir("phones")
+func HandleApiSimulation(c *gin.Context) {
+	var simulationInput SimulationInput
+	err := c.BindJSON(&simulationInput)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	var simulationOutput SimulationOutput
+	simulationOutput.Phone = generateVerticies(10000)
+	simulationOutput.Paraboloid = generateVerticies(10000)
+	simulationOutput.User = generateVerticies(10000)
+
+	c.JSON(http.StatusOK, simulationOutput)
+}
+
+func HandleHtmxGetPhones(c *gin.Context) {
+	phoneOptions, err := GetPhones()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "")
+	}
+
+	htmlOptions := ""
+	for i := 0; i < len(phoneOptions); i++ {
+		htmlOptions += fmt.Sprintf("<option id='%s' value='%s'>%s</option>", phoneOptions[i].Name, phoneOptions[i].Filename, phoneOptions[i].Name)
+	}
+
+	c.String(http.StatusOK, htmlOptions)
+}
+
+func HandleApiGetPhones(c *gin.Context) {
+	phoneOptions, err := GetPhones()
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+	c.JSON(http.StatusOK, phoneOptions)
+}
+
+func GetPhones() ([]PhoneOption, error) {
+	dir, err := os.ReadDir("phones")
+	if err != nil {
+		return nil, err
 	}
 
 	var phoneOptions []PhoneOption
@@ -90,8 +167,7 @@ func GetPhones(c *gin.Context) {
 			phoneOptions = append(phoneOptions, option)
 		}
 	}
-
-	c.JSON(http.StatusOK, phoneOptions)
+	return phoneOptions, nil
 }
 
 func GetPhoneDimensions(c *gin.Context) {

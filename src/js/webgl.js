@@ -1,30 +1,83 @@
 const vertexShaderSource = `
     attribute vec4 aVertexPosition;
+    attribute vec4 aVertexColor;
+
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
+
+    varying mediump vec4 vColor;
 
     void main() {
         gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
         gl_PointSize = 1.0;
+
+        vColor = aVertexColor;
     }
 `;
 
 const fragmentShaderSource = `
+    varying mediump vec4 vColor;
+    
     void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        gl_FragColor = vColor;
     }
 `;
 
-var positions = [];
+var positions = {
+    phone: [],
+    paraboloid: [],
+    user: [],
+};
+
+var colors = {
+    phone: [1.0, 0.0, 0.0, 1.0],
+    paraboloid: [0.0, 1.0, 0.0, 1.0],
+    user: [0.0, 0.0, 1.0, 1.0],
+}
 
 main();
 
 document.querySelector("button").onclick = buttonClickHandler.bind(document);
 
 function buttonClickHandler() {
-    console.log(document);
-    getVerticies(document.querySelector("#numVerticies").value);
+    //Phone
+    var phone = document.querySelector("#phoneSelector").value
+
+    //Paraboloid
+    var paraboloid = {
+        x: Number(document.querySelector("#paraboloidX").value),
+        y: Number(document.querySelector("#paraboloidY").value),
+        z: Number(document.querySelector("#paraboloidZ").value),
+        angle: Number(document.querySelector("#paraboloidAngle").value),
+    }
+
+    //Slicing Plane
+    var slicingPlane = {
+        height: Number(document.querySelector("#slicingPlaneHeight").value),
+    }
+
+    //User Radius
+    var userRadius = {
+        radius: Number(document.querySelector("#userRadius").value),
+    }
+
+    //Resolution
+    var resolution = {
+        linear: Number(document.querySelector("#linearResolution").value),
+        angular: Number(document.querySelector("#angularResolution").value),
+    }
+
+    var payload = {
+        phone: phone,
+        paraboloid: paraboloid,
+        slicingPlane: slicingPlane,
+        userRadius: userRadius,
+        resolution: resolution,
+    }
+    getSimulation(payload);
 }
+
+
 //
 // start here
 //
@@ -45,6 +98,7 @@ function main() {
         program: shaderProgram,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -55,14 +109,24 @@ function main() {
     setInterval(() => {
         // Set clear color to black, fully opaque
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearDepth(1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        
         // Clear the color buffer with specified clear color
-        gl.clear(gl.COLOR_BUFFER_BIT);
-    
-        const buffers = initBuffers(gl, positions);
-    
-        // Draw the scene
-        drawScene(gl, programInfo, buffers);
-    }, 1000)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        
+        gl.color
+        
+        for(k in positions) {
+            var tPositions = positions[k];
+            var tColor = colors[k];
+            const buffers = initBuffers(gl, tPositions, tColor);
+        
+            // Draw the scene
+            drawScene(gl, programInfo, buffers, tPositions);
+        }
+    }, 1000);
 }
 
 function initShaderProgram(gl, vShaderSource, fShaderSource) {
@@ -100,32 +164,37 @@ function loadShader(gl, type, source) {
     return shader;
 }
 
-function initBuffers(gl, verticies) {
+function initBuffers(gl, verticies, color) {
     const positionBuffer = initPositionBuffer(gl, verticies);
+    var colors = [];
+    for(i=0; i <= verticies.length; i+=3) {
+        colors = colors.concat(color);
+    }
+    const colorBuffer = initColorBuffer(gl, colors);
+
     return {
         position: positionBuffer,
+        color: colorBuffer,
     };
 }
 
 function initPositionBuffer(gl, verticies) {
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-    
-
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verticies), gl.STATIC_DRAW);
 
     return positionBuffer;
 }
 
-function drawScene(gl, programInfo, buffers) {
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clearDepth(1.0);
-    gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LEQUAL);
+function initColorBuffer(gl, color) {
+    const colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    return colorBuffer;
+}
 
+function drawScene(gl, programInfo, buffers, positions) {
     const fieldOfView = 45 * Math.PI / 180;
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
@@ -139,7 +208,7 @@ function drawScene(gl, programInfo, buffers) {
     mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
 
     {
-        const numComponents = 2;
+        const numComponents = 3;
         const type = gl.FLOAT;
         const normalize = false;
         const stride = 0;
@@ -154,10 +223,21 @@ function drawScene(gl, programInfo, buffers) {
             offset,
         );
         gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+        gl.vertexAttribPointer(
+            programInfo.attribLocations.vertexColor,
+            4,
+            type,
+            normalize,
+            stride,
+            offset,
+        );
+        gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
     }
-
     gl.useProgram(programInfo.program);
-
+    
+    
     gl.uniformMatrix4fv(
         programInfo.uniformLocations.projectionMatrix,
         false,
@@ -176,25 +256,16 @@ function drawScene(gl, programInfo, buffers) {
     }
 }
 
-
-
-function generateVerticies(num) {
-    var verticies = [];
-    for (var i = 0; i < num; i++) {
-        do {
-            x = Math.random()*4-2;
-            y = Math.pow(x, Math.random()*5-2.5) * (Math.random()*8-4)
-        } while (isNaN(x) || isNaN(y))
-        verticies.push(x);
-        verticies.push(y);
+function getSimulation(payload) {
+    opts = {
+        method: "POST",
+        body: JSON.stringify(payload),
     }
-    return verticies;
-}
-
-function getVerticies(numVerticies) {
-    fetch(`http://localhost:8080/api/verticies?numVerticies=${numVerticies}`).then(function(response) {
+    fetch(`http://localhost:8080/api/simulation`, opts).then(function(response) {
         return response.json();
     }).then(function(data) {
-        positions = data.verticies; 
+        positions.phone = data.Phone;
+        positions.paraboloid = data.Paraboloid;
+        positions.user = data.User;
     });
 }
