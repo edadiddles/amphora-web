@@ -12,44 +12,52 @@
         <script src="js/webgl.js" defer></script>
     </head>
     <body>
-        <div>
-            <h3>Phone</h3>
-            <label for="phoneSelector">Phone</label>
-            <select id="phoneSelector" hx-get="/htmx/phones" hx-swap="innerHTML" hx-trigger="load"></select>
-        </div>
-        <div>
-            <h3>Paraboloid</h3>
-            <label for="paraboloidX">X Coefficient</label>
-            <input id="paraboloidX" name="paraboloidX" type="number" value="1" />
-            <label for="paraboloidY">Y Coefficient</label>
-            <input id="paraboloidY" name="paraboloidY" type="number" value="1" />
-            <label for="paraboloidZ">Z Coefficient</label>
-            <input id="paraboloidZ" name="paraboloidZ" type="number" value="1" />
-            <label for="paraboloidAngle">Angle (degrees)</label>
-            <input id="paraboloidAngle" name="paraboloidAngle" type="number" value="30" />
-        </div>
-        <div>
-            <h3>Slicing Plane</h3>
-            <label for="slicingPlaneHeight">Height (cm)</label>
-            <input id="slicingPlaneHeight" name="slicingPlaneHeight" type="number" value="5" />
-        </div>
-        <div>
-            <h3>User Radius</h3>
-            <label for="userRadius">User Distance (m)</label>
-            <input id="userRadius" name="userRadius" type="number" value="2" />
-        </div>
-        <div>
-            <h3>Resolution</h3>
-            <label for="linearResolution">Linear</label>
-            <input id="linearResolution" name="linearResolution" type="number" value="100" />
-            <label for="angularResolution">Angular</label>
-            <input id="angularResolution" name="angularResolution" type="number" value="100" />
-        </div>
-        <div>
-            <button>Simulate</button>
-        </div>
-        <div>
-            <canvas id="glViewport" width="1840" height="820"></canvas>
+        <div style="display: flex;">
+            <div style="width: 580px; height: 900px;">
+                <div>
+                    <h3>Phone</h3>
+                    <label for="phoneSelector">Phone</label>
+                    <select id="phoneSelector" hx-get="/htmx/phones" hx-swap="innerHTML" hx-trigger="load"></select>
+                </div>
+                <div>
+                    <h3>Paraboloid</h3>
+                    <label for="paraboloidX">X Coefficient</label>
+                    <input id="paraboloidX" name="paraboloidX" type="number" value="1" />
+                    <br />
+                    <label for="paraboloidY">Y Coefficient</label>
+                    <input id="paraboloidY" name="paraboloidY" type="number" value="1" />
+                    <br />
+                    <label for="paraboloidZ">Z Coefficient</label>
+                    <input id="paraboloidZ" name="paraboloidZ" type="number" value="1" />
+                    <br />
+                    <label for="paraboloidAngle">Angle (degrees)</label>
+                    <input id="paraboloidAngle" name="paraboloidAngle" type="number" value="30" />
+                </div>
+                <div>
+                    <h3>Slicing Plane</h3>
+                    <label for="slicingPlaneHeight">Height (cm)</label>
+                    <input id="slicingPlaneHeight" name="slicingPlaneHeight" type="number" value="5" />
+                </div>
+                <div>
+                    <h3>User Radius</h3>
+                    <label for="userRadius">User Distance (m)</label>
+                    <input id="userRadius" name="userRadius" type="number" value="2" />
+                </div>
+                <div>
+                    <h3>Resolution</h3>
+                    <label for="linearResolution">Linear</label>
+                    <input id="linearResolution" name="linearResolution" type="number" value="100" />
+                    <br />
+                    <label for="angularResolution">Angular</label>
+                    <input id="angularResolution" name="angularResolution" type="number" value="100" />
+                </div>
+                <div>
+                    <button>Simulate</button>
+                </div>
+            </div>
+            <div style="width: 1200px; height: 900px;">
+                <canvas id="glViewport" width="900" height="900"></canvas>
+            </div>
         </div>
     </body>
 </html>

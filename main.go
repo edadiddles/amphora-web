@@ -118,9 +118,9 @@ func HandleApiSimulation(c *gin.Context) {
 	}
 
 	var simulationOutput SimulationOutput
-	simulationOutput.Phone = generateVerticies(10000)
-	simulationOutput.Paraboloid = generateVerticies(10000)
-	simulationOutput.User = generateVerticies(10000)
+	simulationOutput.Phone = generateVerticies(100000)
+	simulationOutput.Paraboloid = generateVerticies(100000)
+	simulationOutput.User = generateVerticies(100000)
 
 	c.JSON(http.StatusOK, simulationOutput)
 }
@@ -202,9 +202,13 @@ func generateVerticies(numVerticies int) []float32 {
 	verticies := make([]float32, 3*numVerticies)
 
 	for i := 0; i < numVerticies; i++ {
-		verticies[3*i] = rand.Float32()*10 - 5
-		verticies[3*i+1] = rand.Float32()*10 - 5
-		verticies[3*i+2] = rand.Float32()*10 - 5
+		x := rand.Float32()*10 - 5
+		y := rand.Float32()*2 - 1
+		z := rand.Float32()*2 - 1
+
+		verticies[3*i] = x
+		verticies[3*i+1] = y
+		verticies[3*i+2] = z //x*x + y*y
 	}
 	return verticies
 }
