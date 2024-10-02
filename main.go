@@ -34,31 +34,31 @@ type Speaker struct {
 }
 
 type Paraboloid struct {
-	X     float32 `json:x`
-	Y     float32 `json:y`
-	Z     float32 `json:z`
-	Angle float32 `json:angle`
+	X     float32 `json:"x"`
+	Y     float32 `json:"y"`
+	Z     float32 `json:"z"`
+	Angle float32 `json:"angle"`
 }
 
 type SlicingPlane struct {
-	Height float32 `json:height`
+	Height float32 `json:"height"`
 }
 
 type UserRadius struct {
-	Radius float32 `json:user`
+	Radius float32 `json:"user"`
 }
 
 type Resolution struct {
-	Linear  float32 `json:linear`
-	Angular float32 `json:angular`
+	Linear  float32 `json:"linear"`
+	Angular float32 `json:"angular"`
 }
 
 type SimulationInput struct {
-	Phone        string       `json:phoneSelector`
-	Paraboloid   Paraboloid   `json:paraboloid`
-	SlicingPlane SlicingPlane `json:slicingPlane`
-	UserRadius   UserRadius   `json:userRadius`
-	Resolution   Resolution   `json:resolution`
+	Phone        string       `json:"phone"`
+	Paraboloid   Paraboloid   `json:"paraboloid"`
+	SlicingPlane SlicingPlane `json:"slicingPlane"`
+	UserRadius   UserRadius   `json:"userRadius"`
+	Resolution   Resolution   `json:"resolution"`
 }
 
 type SimulationOutput struct {
@@ -98,7 +98,7 @@ func main() {
 	r.GET("/htmx/phones", HandleHtmxGetPhones)
 
 	// api
-	r.GET("/api/phone", GetPhoneDimensions)
+	r.GET("/api/phone", HandleApiPhone)
 	r.GET("/api/phones", HandleApiGetPhones)
 
 	r.POST("/api/simulation", HandleApiSimulation)
@@ -117,12 +117,43 @@ func HandleApiSimulation(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
 
+	phone, err := getPhoneDimensions(simulationInput.Phone)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	phoneVerticies, paraboloidVerticies, userVerticies, err := generateSimulation(phone, &simulationInput.Paraboloid, &simulationInput.SlicingPlane, &simulationInput.UserRadius, &simulationInput.Resolution)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+
 	var simulationOutput SimulationOutput
-	simulationOutput.Phone = generateVerticies(100000)
-	simulationOutput.Paraboloid = generateVerticies(100000)
-	simulationOutput.User = generateVerticies(100000)
+	simulationOutput.Phone = phoneVerticies
+	simulationOutput.Paraboloid = paraboloidVerticies
+	simulationOutput.User = userVerticies
 
 	c.JSON(http.StatusOK, simulationOutput)
+}
+
+func generateSimulation(phone *Phone, paraboloid *Paraboloid, slicingPlane *SlicingPlane, userRadius *UserRadius, resolution *Resolution) ([]float32, []float32, []float32, error) {
+	// setup scene
+	// phone bottom center should intersect the 'normal' vector of the paraboloids 'focus plane'
+	// the paraboloids focus plane is the plane that includes the paraboloids focus and normal vector intersects the vertex
+	// the phone should have all four corners touch the surface of the parabolid
+	// the slicing plane represents the ending of the paraboloid surface
+	// the user radius indicates the distance from which the user will be positioned from the amphora device
+	// the sound will be simulated as particles of sounds (aka phonons) and interference effects will be ignored
+	// the sound will be emitted along a rectangular speaker that is split into a grid and will assume the speaker will emit sound at a specified angle
+	// the speaker grid will be split into equal rows and columns based on the 'linear resolution'
+	// the speaker emission cone will be split into equal azimuth and altitude sections based on the 'angular resolution'
+	// there there will be (linear resolution)^2 points of sound emission and (angular resolution)^2 directional emissions of sound
+	// hence there will be (linear resolution)^2*(angular resolution)^2 sound particles tracked in this simulation.
+
+	phoneVerticies := generateVerticies(10000)
+	paraboloidVerticies := generateVerticies(0)
+	userVerticies := generateVerticies(0)
+
+	return phoneVerticies, paraboloidVerticies, userVerticies, nil
 }
 
 func HandleHtmxGetPhones(c *gin.Context) {
@@ -137,6 +168,19 @@ func HandleHtmxGetPhones(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, htmlOptions)
+}
+
+func HandleApiPhone(c *gin.Context) {
+	model := c.Query("model")
+	var filepath = model + ".xml"
+
+	phone, err := getPhoneDimensions(filepath)
+	if err != nil {
+		c.AbortWithStatus(http.StatusTeapot)
+		return
+	}
+
+	c.JSON(http.StatusOK, phone)
 }
 
 func HandleApiGetPhones(c *gin.Context) {
@@ -170,18 +214,14 @@ func GetPhones() ([]PhoneOption, error) {
 	return phoneOptions, nil
 }
 
-func GetPhoneDimensions(c *gin.Context) {
-	model := c.Query("model")
-
-	var filepath = model + ".xml"
-
-	phone, err := parseXml(filepath)
+func getPhoneDimensions(filepath string) (*Phone, error) {
+	phone, err := parseXml("phones/" + filepath)
 	if err != nil {
-		c.AbortWithStatus(http.StatusTeapot)
-		return
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, phone)
+	return phone, nil
+
 }
 
 func GetVerticies(c *gin.Context) {

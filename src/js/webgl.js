@@ -160,6 +160,8 @@ function main() {
         return;
     }
 
+    currTranslation = [gl.canvas.clientWidth/2, gl.canvas.clientHeight/2, 0];
+
     const shaderProgram = initShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
 
     const programInfo = {
