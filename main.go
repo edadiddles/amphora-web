@@ -42,6 +42,7 @@ type Paraboloid struct {
 
 type SlicingPlane struct {
 	Height float32 `json:"height"`
+	Angle  float32 `json:"angle"`
 }
 
 type UserRadius struct {

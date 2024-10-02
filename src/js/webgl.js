@@ -122,6 +122,7 @@ function buttonClickHandler() {
     //Slicing Plane
     var slicingPlane = {
         height: Number(document.querySelector("#slicingPlaneHeight").value),
+        angle: Number(document.querySelector("#slicingPlaneAngle").value),
     }
 
     //User Radius
