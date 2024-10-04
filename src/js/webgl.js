@@ -109,7 +109,10 @@ function mouseMoveHandler(evt) {
 
 function buttonClickHandler() {
     //Phone
-    var phone = document.querySelector("#phoneSelector").value
+    var phone = {
+        filename: document.querySelector("#phoneSelector").value,
+        angle: Number(document.querySelector("#phoneAngle").value),
+    }
 
     //Paraboloid
     var paraboloid = {
