@@ -10,51 +10,69 @@
         <!-- Javascript -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js" integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ==" crossorigin="anonymous" defer></script>
         <script src="js/webgl.js" defer></script>
+
+        <!-- CSS -->
+        <style type="text/css">
+            .green {
+                background-color: green;
+            }
+            .red {
+                background-color: red;
+            }
+            .blue {
+                background-color: blue;
+            }
+            .color-tag {
+                width: 10px;
+                height: 10px;
+                display: inline-flex;
+            }
+        </style>
     </head>
     <body>
         <div style="display: flex;">
             <div style="width: 580px; height: 900px;">
                 <div>
-                    <h3>Phone</h3>
+                    <h3>Phone</h3><span id="phoneColorTag" class="color-tag red" style="width: 10px;height:10px;"></span>
                     <label for="phoneSelector">Phone</label>
                     <select id="phoneSelector" hx-get="/htmx/phones" hx-swap="innerHTML" hx-trigger="load"></select>
                     <br />
                     <label for="phoneAngle">Angle (degrees)</label>
-                    <input id="phoneAngle" name="phoneAngle" type="number" value="30" />
+                    <input id="phoneAngle" name="phoneAngle" type="number" value="5" />
                 </div>
                 <div>
-                    <h3>Paraboloid</h3>
+                    <h3>Paraboloid</h3><span id="paraboloidColorTag" class="color-tag green" style="width:10px; height:10px;"></span>
                     <label for="paraboloidX">X Coefficient</label>
-                    <input id="paraboloidX" name="paraboloidX" type="number" value="1" />
+                    <input id="paraboloidX" name="paraboloidX" type="number" value="0.5" />
                     <br />
                     <label for="paraboloidY">Y Coefficient</label>
-                    <input id="paraboloidY" name="paraboloidY" type="number" value="1" />
+                    <input id="paraboloidY" name="paraboloidY" type="number" value="0.5" />
                     <br />
                     <label for="paraboloidZ">Z Coefficient</label>
                     <input id="paraboloidZ" name="paraboloidZ" type="number" value="1" />
                     <br />
                     <label for="paraboloidAngle">Angle (degrees)</label>
-                    <input id="paraboloidAngle" name="paraboloidAngle" type="number" value="30" />
+                    <input id="paraboloidAngle" name="paraboloidAngle" type="number" value="45" />
                 </div>
                 <div>
                     <h3>Slicing Plane</h3>
                     <label for="slicingPlaneHeight">Height (cm)</label>
-                    <input id="slicingPlaneHeight" name="slicingPlaneHeight" type="number" value="5" />
+                    <input id="slicingPlaneHeight" name="slicingPlaneHeight" type="number" value="15" />
                     <label for="slicingPlaneAngle">Angle (degrees)</label>
-                    <input id="slicingPlaneAngle" name="slicingPlaneAngle" type="number" value="45" />
+                    <input id="slicingPlaneAngle" name="slicingPlaneAngle" type="number" value="30" />
                 </div>
                 <div>
-                    <h3>User Radius</h3>
+                    <h3>User Radius</h3><span id="userRadiusColorTag" class="color-tag blue" style="width:10px;height:10px;"></span>
                     <label for="userRadius">User Distance (m)</label>
-                    <input id="userRadius" name="userRadius" type="number" value="2" />
+                    <input id="userRadius" name="userRadius" type="number" value="1" />
                 </div>
                 <div>
                     <h3>Resolution</h3>
                     <label for="linearResolution">Linear</label>
-                    <input id="linearResolution" name="linearResolution" type="number" value="100" />
+                    <input id="linearResolution" name="linearResolution" type="number" value="0.5" />
                     <br />
                     <label for="angularResolution">Angular</label>
-                    <input id="angularResolution" name="angularResolution" type="number" value="100" />
+                    <input id="angularResolution" name="angularResolution" type="number" value="0.1" />
                 </div>
                 <div>
                     <button>Simulate</button>

@@ -32,6 +32,7 @@ var colors = {
 var currTranslation = [0, 0, 0];
 var currRotation = [degToRad(0), degToRad(0), degToRad(0)];
 var currScale = [180,180,180];
+var currDepth = 1000;
 
 main();
 
@@ -84,7 +85,11 @@ function mouseWheelHandler(evt) {
     currScale[1] += delta;
     currScale[2] += delta;
 
-    if(currScale[0] < 0) {
+    if(evt.ctrlKey) {
+        currDepth += delta
+        evt.preventDefault();
+    }
+    else if(currScale[0] < 0) {
         currScale[0] = 0;
         currScale[1] = 0;
         currScale[2] = 0;
@@ -92,17 +97,29 @@ function mouseWheelHandler(evt) {
 }
 
 function mouseMoveHandler(evt) {
-    if(mouseLeftPressed) {
-        currRotation[1] += evt.movementX/100;
-        currRotation[0] += evt.movementY/100;
-    }
-    else if(mouseRightPressed) {
-        currRotation[2] += evt.movementX/100;
-        currRotation[0] += evt.movementY/100;
-    }
-    if(mouseWheelPressed) {
-        currTranslation[0] += evt.movementX;
-        currTranslation[1] += evt.movementY;
+    if(evt.ctrlKey) {
+        if(mouseLeftPressed) {
+            currRotation[0] += evt.movementX/100;
+        }
+        else if(mouseRightPressed) {
+            currRotation[1] += evt.movementY/100;
+        }
+        if(mouseWheelPressed) {
+            currRotation[2] += evt.movementX;
+        }
+    }else {
+        if(mouseLeftPressed) {
+            currRotation[1] += evt.movementX/100;
+            currRotation[0] += evt.movementY/100;
+        }
+        else if(mouseRightPressed) {
+            currRotation[2] += evt.movementX/100;
+            currRotation[0] += evt.movementY/100;
+        }
+        if(mouseWheelPressed) {
+            currTranslation[0] += evt.movementX;
+            currTranslation[1] += evt.movementY;
+        }
     }
 }
 
@@ -184,7 +201,14 @@ function main() {
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clearDepth(1.0);
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        // gl.enable(gl.MULTISAMPLE);
+        gl.enable(gl.BLEND);
+        // gl.depthRange(0.0, 10000.0);
+        // gl.depthMask(false);
         gl.depthFunc(gl.LEQUAL);
+        // gl.depthFunc(gl.GEQUAL);
+        // gl.depthFunc(gl.EQUAL);
         
         // Clear the color buffer with specified clear color
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -195,7 +219,7 @@ function main() {
         var scale = currScale;
 
         //projection
-        var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 100);
+        var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, currDepth);
 
         //translation
         matrix = m4.translate(matrix, translation[0], translation[1], translation[2]);
@@ -308,9 +332,9 @@ function getSimulation(payload) {
     fetch(`http://localhost:8080/api/simulation`, opts).then(function(response) {
         return response.json();
     }).then(function(data) {
-        positions.phone = data.Phone;
-        positions.paraboloid = data.Paraboloid;
-        positions.user = data.User;
+        positions.phone = data.Phone || [];
+        positions.paraboloid = data.Paraboloid || [];
+        positions.user = data.User || [];
     });
 }
 
