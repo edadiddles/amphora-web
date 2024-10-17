@@ -33,6 +33,8 @@ var currTranslation = [0, 0, 0];
 var currRotation = [degToRad(0), degToRad(0), degToRad(0)];
 var currScale = [180,180,180];
 var currDepth = 1000;
+var nComponents = 3;
+var shouldNormalize = true;
 
 main();
 
@@ -296,9 +298,9 @@ function initPositionBuffer(gl, verticies) {
 
 function drawScene(gl, programInfo, buffers, positions, color, matrix) {
     {
-        const numComponents = 3;
+        const numComponents = nComponents;
         const type = gl.FLOAT;
-        const normalize = false;
+        const normalize = shouldNormalize;
         const stride = 0;
         const offset = 0;
         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
@@ -319,7 +321,7 @@ function drawScene(gl, programInfo, buffers, positions, color, matrix) {
 
     {
         const offset = 0;
-        const vertexCount = positions.length;
+        const vertexCount = positions.length/3;
         gl.drawArrays(gl.POINTS, offset, vertexCount);
     }
 }

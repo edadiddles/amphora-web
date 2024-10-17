@@ -4,26 +4,28 @@ import (
 	"math"
 )
 
-func DotProduct(a []float64, b []float64) float64 {
+func Equivalent(outVec []float64, inVec []float64, n int) {
+	for i := 0; i < n; i++ {
+		outVec[i] = inVec[i]
+	}
+}
+
+func DotProduct(a []float64, b []float64, n int) float64 {
 	sum := 0.0
-	for i := 0; i < len(a); i++ {
+	for i := 0; i < n; i++ {
 		sum += a[i] * b[i]
 	}
 
 	return sum
 }
 
-func CrossProduct(a []float64, b []float64) []float64 {
-	product := []float64{a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]}
-	return product
+func CrossProduct(product []float64, a []float64, b []float64, n int) {
+	for i := 0; i < n; i++ {
+		product[i] = a[(i+1)%n]*b[(i+2)%n] - a[(i+2)%n]*b[(i+1)%n]
+	}
 }
 
-func Rotation(axisOfRotation []float64, rotationAngle float64) [][]float64 {
-	rotationMatrix := [][]float64{
-		{0, 0, 0},
-		{0, 0, 0},
-		{0, 0, 0},
-	}
+func Rotation(rotationMatrix [][]float64, axisOfRotation []float64, rotationAngle float64) {
 
 	rotationMatrix[0][0] = math.Cos(rotationAngle) + axisOfRotation[0]*axisOfRotation[0]*(1-math.Cos(rotationAngle))
 	rotationMatrix[1][1] = math.Cos(rotationAngle) + axisOfRotation[1]*axisOfRotation[1]*(1-math.Cos(rotationAngle))
@@ -37,73 +39,70 @@ func Rotation(axisOfRotation []float64, rotationAngle float64) [][]float64 {
 
 	rotationMatrix[2][0] = -axisOfRotation[1]*math.Sin(rotationAngle) + axisOfRotation[0]*axisOfRotation[2]*(1-math.Cos(rotationAngle))
 	rotationMatrix[2][1] = axisOfRotation[0]*math.Sin(rotationAngle) + axisOfRotation[1]*axisOfRotation[2]*(1-math.Cos(rotationAngle))
-
-	return rotationMatrix
 }
 
-func MatrixMultiply(matrix1 [][]float64, matrix2 [][]float64) [][]float64 {
-	outputMatrix := [][]float64{
-		{0, 0, 0},
-		{0, 0, 0},
-		{0, 0, 0},
-	}
-
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
+func MatrixMultiply(outputMatrix [][]float64, matrix1 [][]float64, matrix2 [][]float64, n int) {
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
 			outputMatrix[i][j] = 0
-			for k := 0; k < 3; k++ {
-				outputMatrix[i][j] += matrix1[i][k] * matrix2[k][j]
+			for k := 0; k < n; k++ {
+				outputMatrix[i][j] = outputMatrix[i][j] + matrix1[i][k]*matrix2[k][j]
 			}
 		}
 	}
-
-	return outputMatrix
 }
 
-func MatrixVecMultiply(matrix [][]float64, inpVec []float64) []float64 {
-	outVec := make([]float64, 3)
-
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
+func MatrixVecMultiply(outVec []float64, matrix [][]float64, inpVec []float64, n int) {
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
 			if j == 0 {
 				outVec[i] = 0
 			}
 
-			outVec[i] += matrix[i][j] * inpVec[j]
+			outVec[i] = outVec[i] + matrix[i][j]*inpVec[j]
 
 		}
 	}
-
-	return outVec
 }
 
-func Intersection(phononLoc []float64, phononProj []float64, lengthToIntersect float64) []float64 {
-	intersection := make([]float64, 3)
+func MatrixMatrixVecMultiply(outVec []float64, matrix1 [][]float64, matrix2 [][]float64, vec []float64, n int) {
+	intermediateMatrix := [][]float64{
+		{0, 0, 0},
+		{0, 0, 0},
+		{0, 0, 0},
+	}
+
+	MatrixMultiply(intermediateMatrix, matrix1, matrix2, n)
+	MatrixVecMultiply(outVec, intermediateMatrix, vec, n)
+}
+
+func Intersection(intersection []float64, phononLoc []float64, phononProj []float64, lengthToIntersect float64) {
 	for i := 0; i < 3; i++ {
 		intersection[i] = phononLoc[i] + lengthToIntersect*phononProj[i]
 	}
-
-	return intersection
 }
 
-func Reflect(vec1 []float64, vec2 []float64) []float64 {
-	vec1 = Normalize(vec1)
-	vec2 = Normalize(vec2)
-
-	angleReflect := math.Acos(-DotProduct(vec2, vec1))
-	reflectVec := CrossProduct(vec2, vec1)
-	reflectVec = Normalize(reflectVec)
-	reflectionRotation := Rotation(reflectVec, angleReflect)
-
-	outVec := MatrixVecMultiply(reflectionRotation, vec2)
-	return outVec
-}
-
-func Normalize(vec []float64) []float64 {
-	outVec := make([]float64, 3)
-	vecLength := math.Sqrt(DotProduct(vec, vec))
-	for i := 0; i < 3; i++ {
-		outVec[i] = vec[i] / vecLength
+func Reflect(vec1 []float64, vec2 []float64) {
+	reflectVec := []float64{0, 0, 0}
+	reflectRot := [][]float64{
+		{0, 0, 0},
+		{0, 0, 0},
+		{0, 0, 0},
 	}
-	return outVec
+
+	angleReflect := math.Acos(-DotProduct(vec2, vec1, 3))
+
+	CrossProduct(reflectVec, vec2, vec1, 3)
+	Normalize(reflectVec, 3)
+
+	Rotation(reflectRot, reflectVec, angleReflect)
+
+	MatrixVecMultiply(vec1, reflectRot, vec2, 3)
+}
+
+func Normalize(vec []float64, n int) {
+	vecLength := math.Sqrt(DotProduct(vec, vec, 3))
+	for i := 0; i < n; i++ {
+		vec[i] = vec[i] / vecLength
+	}
 }
