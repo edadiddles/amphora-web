@@ -95,8 +95,8 @@ func parseXml(xmlFile string) (*PhoneConfig, error) {
 
 func main() {
 	r := gin.Default()
-
-	// serve index page
+	
+    // serve index page
 	r.StaticFile("", "./ui/index.html")
 
 	// serve javascript webgl
@@ -222,7 +222,7 @@ func generateSimulation(phoneConfig *PhoneConfig, phoneInput *PhoneInput, parabo
 	heightSlicingPlane = slicingPlaneInput.Height * 10
 	angleSlicingPlane = slicingPlaneInput.Angle * math.Pi / 180
 
-	anglePhone = phoneInput.Angle * math.Pi / 180
+	anglePhone = phoneInput.Angle * math.Pi / 180  
 
 	radiusUser = userRadiusInput.Radius * 1000
 
@@ -236,9 +236,26 @@ func generateSimulation(phoneConfig *PhoneConfig, phoneInput *PhoneInput, parabo
 	heightSpeaker = phoneConfig.Speaker.Height
 	widthSpeaker = phoneConfig.Speaker.Width
 
-	xPhone = 0.5 * widthPhone
-	yPhone = +(-8.0*math.Pow(widthPhone, 2)*coefficientsParaboloidX*coefficientsParaboloidY*math.Sin(angleParaboloid) - 6.0*math.Pow(lengthPhone, 2)*math.Pow(coefficientsParaboloidY, 2)*math.Sin(angleParaboloid) - 8.0*math.Pow(coefficientsParaboloidZ, 2)*math.Sin(angleParaboloid) - 16.0*lengthPhone*coefficientsParaboloidY*coefficientsParaboloidZ*math.Sin(anglePhone) - 8.0*lengthPhone*coefficientsParaboloidY*coefficientsParaboloidZ*math.Sin(2.0*angleParaboloid+anglePhone) - 4.0*math.Pow(widthPhone, 2)*coefficientsParaboloidX*coefficientsParaboloidY*math.Sin(angleParaboloid+2.0*anglePhone) - 4.0*math.Pow(lengthPhone, 2)*math.Pow(coefficientsParaboloidY, 2)*math.Sin(angleParaboloid+2.0*anglePhone) + 12.0*math.Pow(coefficientsParaboloidZ, 2)*math.Sin(angleParaboloid+2.0*anglePhone) + 4.0*math.Pow(widthPhone, 2)*coefficientsParaboloidX*coefficientsParaboloidY*math.Sin(3.0*angleParaboloid+2.0*anglePhone) + 4.0*math.Pow(lengthPhone, 2)*math.Pow(coefficientsParaboloidY, 2)*math.Sin(3.0*angleParaboloid+2.0*anglePhone) + 4.0*math.Pow(coefficientsParaboloidZ, 2)*math.Sin(3.0*angleParaboloid+2.0*anglePhone) + 8.0*lengthPhone*coefficientsParaboloidY*coefficientsParaboloidZ*math.Sin(2.0*angleParaboloid+3.0*anglePhone) + math.Pow(lengthPhone, 2)*math.Pow(coefficientsParaboloidY, 2)*math.Sin(3.0*angleParaboloid+4.0*anglePhone) - math.Pow(lengthPhone, 2)*math.Pow(coefficientsParaboloidY, 2)*math.Sin(5.0*angleParaboloid+4.0*anglePhone)) / (64.0 * coefficientsParaboloidY * coefficientsParaboloidZ * math.Pow(math.Sin(angleParaboloid+anglePhone), 2))
-	zPhone = -(-8.0*math.Pow(widthPhone, 2)*math.Cos(angleParaboloid)*coefficientsParaboloidX*coefficientsParaboloidY + 4.0*math.Pow(widthPhone, 2)*math.Cos(angleParaboloid+2.0*anglePhone)*coefficientsParaboloidX*coefficientsParaboloidY + 4.0*math.Pow(widthPhone, 2)*math.Cos(3.0*angleParaboloid+2.0*anglePhone)*coefficientsParaboloidX*coefficientsParaboloidY - 6.0*math.Pow(lengthPhone, 2)*math.Cos(angleParaboloid)*math.Pow(coefficientsParaboloidY, 2) + 4.0*math.Pow(lengthPhone, 2)*math.Cos(angleParaboloid+2.0*anglePhone)*math.Pow(coefficientsParaboloidY, 2) + 4.0*math.Pow(lengthPhone, 2)*math.Cos(3.0*angleParaboloid+2.0*anglePhone)*math.Pow(coefficientsParaboloidY, 2) - math.Pow(lengthPhone, 2)*math.Cos(3.0*angleParaboloid+4.0*anglePhone)*math.Pow(coefficientsParaboloidY, 2) - math.Pow(lengthPhone, 2)*math.Cos(5.0*angleParaboloid+4.0*anglePhone)*math.Pow(coefficientsParaboloidY, 2) + 16.0*lengthPhone*math.Cos(anglePhone)*coefficientsParaboloidY*coefficientsParaboloidZ - 8.0*lengthPhone*math.Cos(2.0*angleParaboloid+anglePhone)*coefficientsParaboloidY*coefficientsParaboloidZ - 8.0*lengthPhone*math.Cos(2.0*angleParaboloid+3.0*anglePhone)*coefficientsParaboloidY*coefficientsParaboloidZ - 8.0*math.Cos(angleParaboloid)*math.Pow(coefficientsParaboloidZ, 2) - 12.0*math.Cos(angleParaboloid+2.0*anglePhone)*math.Pow(coefficientsParaboloidZ, 2) + 4.0*math.Cos(3.0*angleParaboloid+2.0*anglePhone)*math.Pow(coefficientsParaboloidZ, 2)) / (64.0 * coefficientsParaboloidY * coefficientsParaboloidZ * math.Pow(math.Sin(angleParaboloid+anglePhone), 2))
+    // trying to reduce trig computation time
+    cosAngleParaboloid := math.Cos(angleParaboloid)
+    sinAngleParaboloid := math.Sin(angleParaboloid)
+    cosAngleSlicingPlane := math.Cos(angleSlicingPlane)
+    sinAngleSlicingPlane := math.Sin(angleSlicingPlane)
+    cosAnglePhone := math.Cos(anglePhone)
+    sinAnglePhone := math.Sin(anglePhone)
+    sqWidthPhone := math.Pow(widthPhone, 2)
+    sqLengthPhone := math.Pow(lengthPhone, 2)
+    //sqCoefficientsParaboloidX := math.Pow(coefficientsParaboloidX, 2)
+    sqCoefficientsParaboloidY := math.Pow(coefficientsParaboloidY, 2)
+    sqCoefficientsParaboloidZ := math.Pow(coefficientsParaboloidZ, 2)
+    sqCosAngleParaboloid := math.Pow(cosAngleParaboloid, 2)
+    sqSinAngleParaboloid := math.Pow(sinAngleParaboloid, 2)
+    sqRadiusUser := math.Pow(radiusUser, 2)
+    thresholdVal := math.Pow(10.0, -6)
+	
+    xPhone = 0.5 * widthPhone
+	yPhone = +(-8.0*sqWidthPhone*coefficientsParaboloidX*coefficientsParaboloidY*sinAngleParaboloid - 6.0*sqLengthPhone*sqCoefficientsParaboloidY*sinAngleParaboloid - 8.0*sqCoefficientsParaboloidZ*sinAngleParaboloid - 16.0*lengthPhone*coefficientsParaboloidY*coefficientsParaboloidZ*sinAnglePhone - 8.0*lengthPhone*coefficientsParaboloidY*coefficientsParaboloidZ*math.Sin(2.0*angleParaboloid+anglePhone) - 4.0*sqWidthPhone*coefficientsParaboloidX*coefficientsParaboloidY*math.Sin(angleParaboloid+2.0*anglePhone) - 4.0*sqLengthPhone*sqCoefficientsParaboloidY*math.Sin(angleParaboloid+2.0*anglePhone) + 12.0*sqCoefficientsParaboloidZ*math.Sin(angleParaboloid+2.0*anglePhone) + 4.0*sqWidthPhone*coefficientsParaboloidX*coefficientsParaboloidY*math.Sin(3.0*angleParaboloid+2.0*anglePhone) + 4.0*sqLengthPhone*sqCoefficientsParaboloidY*math.Sin(3.0*angleParaboloid+2.0*anglePhone) + 4.0*sqCoefficientsParaboloidZ*math.Sin(3.0*angleParaboloid+2.0*anglePhone) + 8.0*lengthPhone*coefficientsParaboloidY*coefficientsParaboloidZ*math.Sin(2.0*angleParaboloid+3.0*anglePhone) + sqLengthPhone*sqCoefficientsParaboloidY*math.Sin(3.0*angleParaboloid+4.0*anglePhone) - sqLengthPhone*sqCoefficientsParaboloidY*math.Sin(5.0*angleParaboloid+4.0*anglePhone)) / (64.0 * coefficientsParaboloidY * coefficientsParaboloidZ * math.Pow(math.Sin(angleParaboloid+anglePhone), 2))
+	zPhone = -(-8.0*sqWidthPhone*cosAngleParaboloid*coefficientsParaboloidX*coefficientsParaboloidY + 4.0*sqWidthPhone*math.Cos(angleParaboloid+2.0*anglePhone)*coefficientsParaboloidX*coefficientsParaboloidY + 4.0*sqWidthPhone*math.Cos(3.0*angleParaboloid+2.0*anglePhone)*coefficientsParaboloidX*coefficientsParaboloidY - 6.0*sqLengthPhone*cosAngleParaboloid*sqCoefficientsParaboloidY + 4.0*sqLengthPhone*math.Cos(angleParaboloid+2.0*anglePhone)*sqCoefficientsParaboloidY + 4.0*sqLengthPhone*math.Cos(3.0*angleParaboloid+2.0*anglePhone)*sqCoefficientsParaboloidY - sqLengthPhone*math.Cos(3.0*angleParaboloid+4.0*anglePhone)*sqCoefficientsParaboloidY - sqLengthPhone*math.Cos(5.0*angleParaboloid+4.0*anglePhone)*sqCoefficientsParaboloidY + 16.0*lengthPhone*cosAnglePhone*coefficientsParaboloidY*coefficientsParaboloidZ - 8.0*lengthPhone*math.Cos(2.0*angleParaboloid+anglePhone)*coefficientsParaboloidY*coefficientsParaboloidZ - 8.0*lengthPhone*math.Cos(2.0*angleParaboloid+3.0*anglePhone)*coefficientsParaboloidY*coefficientsParaboloidZ - 8.0*cosAngleParaboloid*sqCoefficientsParaboloidZ - 12.0*math.Cos(angleParaboloid+2.0*anglePhone)*sqCoefficientsParaboloidZ + 4.0*math.Cos(3.0*angleParaboloid+2.0*anglePhone)*sqCoefficientsParaboloidZ) / (64.0 * coefficientsParaboloidY * coefficientsParaboloidZ * math.Pow(math.Sin(angleParaboloid+anglePhone), 2))
 	cornerPhone[0] = xPhone
 	cornerPhone[1] = yPhone
 	cornerPhone[2] = zPhone
@@ -249,8 +266,8 @@ func generateSimulation(phoneConfig *PhoneConfig, phoneInput *PhoneInput, parabo
 	linalg.Normalize(vecPhoneWidth, 3)
 
 	vecPhoneLength[0] = 0
-	vecPhoneLength[1] = lengthPhone * math.Sin(anglePhone)
-	vecPhoneLength[2] = lengthPhone * math.Cos(anglePhone)
+	vecPhoneLength[1] = lengthPhone * sinAnglePhone
+	vecPhoneLength[2] = lengthPhone * cosAnglePhone
 	linalg.Normalize(vecPhoneLength, 3)
 
 	vecPhoneHeight[0] = vecPhoneLength[1]*vecPhoneWidth[2] - vecPhoneLength[2]*vecPhoneWidth[1]
@@ -280,50 +297,46 @@ func generateSimulation(phoneConfig *PhoneConfig, phoneInput *PhoneInput, parabo
 
 					atUser = false
 					for !atUser {
-						aParaboloid = coefficientsParaboloidX*math.Pow(projectionPhonon[0], 2) + coefficientsParaboloidY*math.Pow(projectionPhonon[1], 2)*math.Pow(math.Cos(angleParaboloid), 2) + coefficientsParaboloidY*math.Pow(projectionPhonon[2], 2)*math.Pow(math.Sin(angleParaboloid), 2) + 2.0*coefficientsParaboloidY*projectionPhonon[1]*projectionPhonon[2]*math.Cos(angleParaboloid)*math.Sin(angleParaboloid)
-						bParaboloid = 2*coefficientsParaboloidX*projectionPhonon[0]*locationPhonon[0] + 2.0*coefficientsParaboloidY*projectionPhonon[1]*locationPhonon[1]*math.Pow(math.Cos(angleParaboloid), 2) + 2.0*coefficientsParaboloidY*projectionPhonon[2]*locationPhonon[2]*math.Pow(math.Sin(angleParaboloid), 2) + 2.0*coefficientsParaboloidY*projectionPhonon[1]*locationPhonon[2]*math.Cos(angleParaboloid)*math.Sin(angleParaboloid) + 2.0*coefficientsParaboloidY*projectionPhonon[2]*locationPhonon[1]*math.Cos(angleParaboloid)*math.Sin(angleParaboloid) + coefficientsParaboloidZ*projectionPhonon[1]*math.Sin(angleParaboloid) - coefficientsParaboloidZ*projectionPhonon[2]*math.Cos(angleParaboloid)
-						cParaboloid = coefficientsParaboloidX*math.Pow(locationPhonon[0], 2) + coefficientsParaboloidY*math.Pow(locationPhonon[1], 2)*math.Pow(math.Cos(angleParaboloid), 2) + coefficientsParaboloidY*math.Pow(locationPhonon[2], 2)*math.Pow(math.Sin(angleParaboloid), 2) + 2.0*coefficientsParaboloidY*locationPhonon[1]*locationPhonon[2]*math.Cos(angleParaboloid)*math.Sin(angleParaboloid) + coefficientsParaboloidZ*locationPhonon[1]*math.Sin(angleParaboloid) - coefficientsParaboloidZ*locationPhonon[2]*math.Cos(angleParaboloid)
+						aParaboloid = coefficientsParaboloidX*math.Pow(projectionPhonon[0], 2) + coefficientsParaboloidY*math.Pow(projectionPhonon[1], 2)*sqCosAngleParaboloid + coefficientsParaboloidY*math.Pow(projectionPhonon[2], 2)*sqSinAngleParaboloid + 2.0*coefficientsParaboloidY*projectionPhonon[1]*projectionPhonon[2]*cosAngleParaboloid*sinAngleParaboloid
+						bParaboloid = 2*coefficientsParaboloidX*projectionPhonon[0]*locationPhonon[0] + 2.0*coefficientsParaboloidY*projectionPhonon[1]*locationPhonon[1]*sqCosAngleParaboloid + 2.0*coefficientsParaboloidY*projectionPhonon[2]*locationPhonon[2]*sqSinAngleParaboloid + 2.0*coefficientsParaboloidY*projectionPhonon[1]*locationPhonon[2]*cosAngleParaboloid*sinAngleParaboloid + 2.0*coefficientsParaboloidY*projectionPhonon[2]*locationPhonon[1]*cosAngleParaboloid*sinAngleParaboloid + coefficientsParaboloidZ*projectionPhonon[1]*sinAngleParaboloid - coefficientsParaboloidZ*projectionPhonon[2]*cosAngleParaboloid
+						cParaboloid = coefficientsParaboloidX*math.Pow(locationPhonon[0], 2) + coefficientsParaboloidY*math.Pow(locationPhonon[1], 2)*sqCosAngleParaboloid + coefficientsParaboloidY*math.Pow(locationPhonon[2], 2)*sqSinAngleParaboloid + 2.0*coefficientsParaboloidY*locationPhonon[1]*locationPhonon[2]*cosAngleParaboloid*sinAngleParaboloid + coefficientsParaboloidZ*locationPhonon[1]*sinAngleParaboloid - coefficientsParaboloidZ*locationPhonon[2]*cosAngleParaboloid
 						tParaboloid = (-bParaboloid + math.Sqrt(math.Pow(bParaboloid, 2)-4*aParaboloid*cParaboloid)) / (2 * aParaboloid)
 						linalg.Intersection(intersectParaboloid, locationPhonon, projectionPhonon, tParaboloid)
 
-						tSlicingPlane = (heightSlicingPlane*math.Cos(angleSlicingPlane) + locationPhonon[1]*math.Cos(angleParaboloid)*math.Sin(angleSlicingPlane) + locationPhonon[1]*math.Sin(angleParaboloid)*math.Cos(angleSlicingPlane) - locationPhonon[2]*math.Cos(angleParaboloid)*math.Cos(angleSlicingPlane) + locationPhonon[2]*math.Sin(angleParaboloid)*math.Sin(angleSlicingPlane)) / (-projectionPhonon[1]*math.Cos(angleParaboloid)*math.Sin(angleSlicingPlane) - projectionPhonon[1]*math.Sin(angleParaboloid)*math.Cos(angleSlicingPlane) + projectionPhonon[2]*math.Cos(angleParaboloid)*math.Cos(angleSlicingPlane) - projectionPhonon[2]*math.Sin(angleParaboloid)*math.Sin(angleSlicingPlane))
+						tSlicingPlane = (heightSlicingPlane*cosAngleSlicingPlane + locationPhonon[1]*cosAngleParaboloid*sinAngleSlicingPlane + locationPhonon[1]*sinAngleParaboloid*cosAngleSlicingPlane - locationPhonon[2]*cosAngleParaboloid*cosAngleSlicingPlane + locationPhonon[2]*sinAngleParaboloid*sinAngleSlicingPlane) / (-projectionPhonon[1]*cosAngleParaboloid*sinAngleSlicingPlane - projectionPhonon[1]*sinAngleParaboloid*cosAngleSlicingPlane + projectionPhonon[2]*cosAngleParaboloid*cosAngleSlicingPlane - projectionPhonon[2]*sinAngleParaboloid*sinAngleSlicingPlane)
 
 						tPhone = (linalg.DotProduct(vecPhoneHeight, cornerPhone, 3) - linalg.DotProduct(vecPhoneHeight, locationPhonon, 3)) / (linalg.DotProduct(vecPhoneHeight, projectionPhonon, 3))
 						linalg.Intersection(intersectPhone, locationPhonon, projectionPhonon, tPhone)
 
 						aUser = linalg.DotProduct(projectionPhonon, projectionPhonon, 3)
 						bUser = 2 * linalg.DotProduct(locationPhonon, projectionPhonon, 3)
-						cUser = linalg.DotProduct(locationPhonon, locationPhonon, 3) - math.Pow(radiusUser, 2)
+						cUser = linalg.DotProduct(locationPhonon, locationPhonon, 3) - sqRadiusUser
 						tUser = (-bUser + math.Sqrt(math.Pow(bUser, 2)-4*aUser*cUser)) / (2 * aUser)
 						linalg.Intersection(intersectUser, locationPhonon, projectionPhonon, tUser)
 
-						if tPhone > math.Pow(10.0, -6) && (tPhone < tParaboloid || tParaboloid <= math.Pow(10.0, -6)) && (tPhone < tSlicingPlane || tSlicingPlane <= math.Pow(10.0, -6)) && ((xPhone-widthPhone) <= intersectPhone[0] && intersectPhone[0] <= xPhone && yPhone <= intersectPhone[1] && intersectPhone[1] <= (yPhone+lengthPhone*math.Sin(anglePhone))) {
+						if tPhone > thresholdVal && (tPhone < tParaboloid || tParaboloid <= thresholdVal) && (tPhone < tSlicingPlane || tSlicingPlane <= thresholdVal) && ((xPhone-widthPhone) <= intersectPhone[0] && intersectPhone[0] <= xPhone && yPhone <= intersectPhone[1] && intersectPhone[1] <= (yPhone+lengthPhone*sinAnglePhone)) {
 							linalg.Equivalent(locationPhonon, intersectPhone, 3)
 
 							linalg.Reflect(projectionPhonon, vecPhoneHeight)
 
 							phoneVerticies = append(phoneVerticies, locationPhonon[0]/1000, locationPhonon[1]/1000, locationPhonon[2]/1000)
-						} else if tParaboloid > math.Pow(10.0, -6) && (tParaboloid < tSlicingPlane || tSlicingPlane <= math.Pow(10.0, -6)) {
+						} else if tParaboloid > thresholdVal && (tParaboloid < tSlicingPlane || tSlicingPlane <= thresholdVal) {
 							linalg.Equivalent(locationPhonon, intersectParaboloid, 3)
 
 							vecNormal := []float64{0, 0, 0}
 
 							vecNormal[0] = -2 * coefficientsParaboloidX * locationPhonon[0]
-							vecNormal[1] = -2*coefficientsParaboloidY*math.Cos(angleParaboloid)*(locationPhonon[1]*math.Cos(angleParaboloid)+locationPhonon[2]*math.Sin(angleParaboloid)) - coefficientsParaboloidZ*math.Sin(angleParaboloid)
-							vecNormal[2] = -2*coefficientsParaboloidY*math.Sin(angleParaboloid)*(locationPhonon[1]*math.Cos(angleParaboloid)+locationPhonon[2]*math.Sin(angleParaboloid)) + coefficientsParaboloidZ*math.Cos(angleParaboloid)
+							vecNormal[1] = -2*coefficientsParaboloidY*cosAngleParaboloid*(locationPhonon[1]*cosAngleParaboloid+locationPhonon[2]*sinAngleParaboloid) - coefficientsParaboloidZ*sinAngleParaboloid
+							vecNormal[2] = -2*coefficientsParaboloidY*sinAngleParaboloid*(locationPhonon[1]*cosAngleParaboloid+locationPhonon[2]*sinAngleParaboloid) + coefficientsParaboloidZ*cosAngleParaboloid
 							linalg.Normalize(vecNormal, 3)
 
 							linalg.Reflect(projectionPhonon, vecNormal)
 
 							paraboloidVerticies = append(paraboloidVerticies, locationPhonon[0]/1000, locationPhonon[1]/1000, locationPhonon[2]/1000)
-						} else if tSlicingPlane > math.Pow(10.0, -6) {
+						} else if tSlicingPlane > thresholdVal {
 							atUser = true
 
 							linalg.Equivalent(locationPhonon, intersectUser, 3)
-							if locationPhonon[0] == math.Inf(-1) || locationPhonon[1] == math.Inf(-1) || locationPhonon[2] == math.Inf(-1) || locationPhonon[0] == math.Inf(1) || locationPhonon[1] == math.Inf(1) || locationPhonon[2] == math.Inf(1) || math.IsNaN(locationPhonon[0]) || math.IsNaN(locationPhonon[1]) || math.IsNaN(locationPhonon[2]) {
-								fmt.Printf("User: (%g,%g,%g,%g,%g)\n", aUser, bUser, cUser, tUser, radiusUser)
-								break
-							}
 							userVerticies = append(userVerticies, locationPhonon[0]/1000, locationPhonon[1]/1000, locationPhonon[2]/1000)
 						} else {
 							break
