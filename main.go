@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+    "github.com/aurowora/compress"
 
 	"github.com/gin-contrib/pprof"
 )
@@ -95,7 +96,13 @@ func parseXml(xmlFile string) (*PhoneConfig, error) {
 
 func main() {
 	r := gin.Default()
-	
+	r.Use(compress.Compress(
+        compress.WithAlgo(compress.BROTLI, false),
+        compress.WithAlgo(compress.GZIP, false),
+        compress.WithAlgo(compress.DEFLATE, false),
+        compress.WithAlgo(compress.ZSTD, true),
+        compress.WithCompressLevel(compress.ZSTD, compress.ZstdSpeedFastest),
+    ))
     // serve index page
 	r.StaticFile("", "./ui/index.html")
 
