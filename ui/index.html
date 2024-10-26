@@ -37,8 +37,12 @@
                     <label for="phoneSelector">Phone</label>
                     <select id="phoneSelector" hx-get="/htmx/phones" hx-swap="innerHTML" hx-trigger="load"></select>
                     <br />
-                    <label for="phoneAngle">Angle (degrees)</label>
+                    <label for="phoneAngle">Angle</label>
                     <input id="phoneAngle" name="phoneAngle" type="number" value="5" />
+                    <select id="phoneAngleUnits">
+                        <option name="deg" selected="selected">deg</option>
+                        <option name="rad">rad</option>
+                    </select>
                 </div>
                 <div>
                     <h3>Paraboloid</h3><span id="paraboloidColorTag" class="color-tag green" style="width:10px; height:10px;"></span>
@@ -51,20 +55,44 @@
                     <label for="paraboloidZ">Z Coefficient</label>
                     <input id="paraboloidZ" name="paraboloidZ" type="number" value="1" />
                     <br />
-                    <label for="paraboloidAngle">Angle (degrees)</label>
+                    <label for="paraboloidAngle">Angle</label>
                     <input id="paraboloidAngle" name="paraboloidAngle" type="number" value="45" />
+                    <select id="paraboloidAngleUnits">
+                        <option name="deg" selected="selected">deg</option>
+                        <option name="rad">rad</option>
+                    </select>
                 </div>
                 <div>
                     <h3>Slicing Plane</h3>
-                    <label for="slicingPlaneHeight">Height (cm)</label>
+                    <label for="slicingPlaneHeight">Height</label>
                     <input id="slicingPlaneHeight" name="slicingPlaneHeight" type="number" value="15" />
-                    <label for="slicingPlaneAngle">Angle (degrees)</label>
+                    <select id="slicingPlaneHeightUnits">
+                        <option name="mm">mm</option>
+                        <option name="cm" selected="selected">cm</option>
+                        <option name="m">m</option>
+                        <option name="in">in</option>
+                        <option name="ft">ft</option>
+                    </select>
+                    <br />
+                    <label for="slicingPlaneAngle">Angle</label>
                     <input id="slicingPlaneAngle" name="slicingPlaneAngle" type="number" value="30" />
+                    <select id="slicingPlaneAngleUnits">
+                        <option name="deg" selected="selected">deg</option>
+                        <option name="rad">rad</option>
+                    </select>
                 </div>
                 <div>
-                    <h3>User Radius</h3><span id="userRadiusColorTag" class="color-tag blue" style="width:10px;height:10px;"></span>
-                    <label for="userRadius">User Distance (m)</label>
+                    <h3>User Radius</h3>
+                    <span id="userRadiusColorTag" class="color-tag blue" style="width:10px;height:10px;"></span>
+                    <label for="userRadius">User Distance</label>
                     <input id="userRadius" name="userRadius" type="number" value="1" />
+                    <select id="userRadiusUnits">
+                        <option name="mm">mm</option>
+                        <option name="cm">cm</option>
+                        <option name="m" selected="selected">m</option>
+                        <option name="in">in</option>
+                        <option name="ft">ft</option>
+                    </select>
                 </div>
                 <div>
                     <h3>Resolution</h3>

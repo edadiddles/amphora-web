@@ -131,6 +131,7 @@ function buttonClickHandler() {
     var phone = {
         filename: document.querySelector("#phoneSelector").value,
         angle: Number(document.querySelector("#phoneAngle").value),
+        angleUnits: document.getElementById("phoneAngleUnits").value,
     }
 
     //Paraboloid
@@ -139,17 +140,21 @@ function buttonClickHandler() {
         y: Number(document.querySelector("#paraboloidY").value),
         z: Number(document.querySelector("#paraboloidZ").value),
         angle: Number(document.querySelector("#paraboloidAngle").value),
+        angleUnits: document.getElementById("paraboloidAngleUnits").value,
     }
 
     //Slicing Plane
     var slicingPlane = {
         height: Number(document.querySelector("#slicingPlaneHeight").value),
+        heightUnits: document.getElementById("slicingPlaneHeightUnits").value,
         angle: Number(document.querySelector("#slicingPlaneAngle").value),
+        angleUnits: document.getElementById("slicingPlaneAngleUnits").value,
     }
 
     //User Radius
     var userRadius = {
         radius: Number(document.querySelector("#userRadius").value),
+        radiusUnits: document.getElementById("userRadiusUnits").value,
     }
 
     //Resolution

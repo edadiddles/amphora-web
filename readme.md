@@ -16,12 +16,13 @@ My goal with recreating this problem is simple.
 4. I want a problem that is resource intensive so that I can explore low-level techniques to produce more performance
 5. I want a base problem that I can use to try and learn different languages and compare performance
 
-### What are some ideas that I have to increase performance when running with Golang
-1. Use of channels
+### What are some ideas that I have to increase performance when running 
+1. Parallelization/concurrency
 2. Better management of memory
 3. Streaming/Batching results
 
-### Other languages that I may explore useing
+### Other languages that I may explore using
 1. Zig
 2. OCaml
 3. Rust
+4. Elixer

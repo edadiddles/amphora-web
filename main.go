@@ -1,7 +1,7 @@
 package main
 
 import (
-	"amphora/linalg"
+	"amphora/pkg/linalg"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -39,6 +39,7 @@ type SpeakerConfig struct {
 type PhoneInput struct {
 	Filename string  `json:"filename"`
 	Angle    float64 `json:"angle"`
+    AngleUnits string `json:"angleUnits"`
 }
 
 type ParaboloidInput struct {
@@ -46,15 +47,19 @@ type ParaboloidInput struct {
 	Y     float64 `json:"y"`
 	Z     float64 `json:"z"`
 	Angle float64 `json:"angle"`
+    AngleUnits string `json:"angleUnits"`
 }
 
 type SlicingPlaneInput struct {
 	Height float64 `json:"height"`
+    HeightUnits string `json:"heightUnits"`
 	Angle  float64 `json:"angle"`
+    AngleUnits string `json:"angleUnits"`
 }
 
 type UserRadiusInput struct {
 	Radius float64 `json:"radius"`
+    RadiusUnits string `json:"radiusUnits"`
 }
 
 type ResolutionInput struct {
@@ -74,6 +79,28 @@ type SimulationOutput struct {
 	Phone      []float64
 	Paraboloid []float64
 	User       []float64
+}
+
+
+func conversion(val float64, unit string) float64 {
+    var outputVal float64
+    if unit == "mm" {
+        outputVal = val
+    } else if unit == "cm" {
+        outputVal = 10 * val
+    } else if unit == "m" {
+        outputVal = 1000 * val
+    } else if unit == "in" {
+        outputVal = 25.4 * val
+    } else if unit == "ft" {
+        outputVal = 25.4*12 * val
+    } else if unit == "deg" {
+        outputVal = math.Pi * val/180
+    } else if unit == "rad" {
+        outputVal = val
+    }
+
+    return outputVal
 }
 
 func parseXml(xmlFile string) (*PhoneConfig, error) {
@@ -184,8 +211,8 @@ func generateSimulation(phoneConfig *PhoneConfig, phoneInput *PhoneInput, parabo
 
 	locationSpeaker := []float64{0, 0, 0}
 
-	spanAzimuthal := 30 * math.Pi / 180
-	spanPolar := 2 * math.Pi
+	spanAzimuthal := conversion(30.0, "deg")
+	spanPolar := conversion(2*math.Pi, "rad")
 
 	locationPhonon := []float64{0, 0, 0}
 	projectionPhonon := []float64{0, 0, 0}
@@ -224,14 +251,14 @@ func generateSimulation(phoneConfig *PhoneConfig, phoneInput *PhoneInput, parabo
 	coefficientsParaboloidX = paraboloidInput.X
 	coefficientsParaboloidY = paraboloidInput.Y
 	coefficientsParaboloidZ = paraboloidInput.Z
-	angleParaboloid = paraboloidInput.Angle * math.Pi / 180
+	angleParaboloid = conversion(paraboloidInput.Angle, paraboloidInput.AngleUnits)
 
-	heightSlicingPlane = slicingPlaneInput.Height * 10
-	angleSlicingPlane = slicingPlaneInput.Angle * math.Pi / 180
+	heightSlicingPlane = conversion(slicingPlaneInput.Height, slicingPlaneInput.HeightUnits)
+	angleSlicingPlane = conversion(slicingPlaneInput.Angle, slicingPlaneInput.AngleUnits)
 
-	anglePhone = phoneInput.Angle * math.Pi / 180  
+    anglePhone = conversion(phoneInput.Angle, phoneInput.AngleUnits)
 
-	radiusUser = userRadiusInput.Radius * 1000
+	radiusUser = conversion(userRadiusInput.Radius, userRadiusInput.RadiusUnits)
 
 	linearResolution = resolutionInput.Linear
 	angularResolution = resolutionInput.Angular
@@ -397,6 +424,7 @@ func HandleApiGetPhones(c *gin.Context) {
 
 func GetPhones() ([]PhoneOption, error) {
 	dir, err := os.ReadDir("phones")
+
 	if err != nil {
 		return nil, err
 	}
@@ -469,6 +497,6 @@ func generateVerticies(numVerticies int64, shape string) []float64 {
 			verticies[3*i+1] = y
 			verticies[3*i+2] = math.Sqrt(radius*radius - (x*x + y*y))
 		}
-	}
+    }
 	return verticies
 }
