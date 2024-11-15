@@ -38,7 +38,7 @@ var shouldNormalize = true;
 
 main();
 
-document.querySelector("button").onclick = buttonClickHandler.bind(document);
+document.getElementById("simulateBtn").onclick = buttonClickHandler.bind(document);
 
 document.querySelector("canvas").onmousedown = mouseDownHandler.bind(document);
 document.querySelector("canvas").onmouseup = mouseUpHandler.bind(document);
@@ -127,6 +127,7 @@ function mouseMoveHandler(evt) {
 
 
 function buttonClickHandler() {
+    document.getElementById("simulateBtn").disabled=true;
     //Phone
     var phone = {
         filename: document.querySelector("#phoneSelector").value,
@@ -342,6 +343,8 @@ function getSimulation(payload) {
         positions.phone = data.Phone || [];
         positions.paraboloid = data.Paraboloid || [];
         positions.user = data.User || [];
+
+        document.getElementById("simulateBtn").disabled=false;
     });
 }
 
