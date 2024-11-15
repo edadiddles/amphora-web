@@ -16,27 +16,22 @@ const fragmentShaderSource = `
     }
 `;
 
-var positions = {
-    phone: [],
-    paraboloid: [],
-    user: [],
-};
-
-var colors = {
-    phone: [1.0, 0.0, 0.0, 1.0],
-    paraboloid: [0.0, 1.0, 0.0, 1.0],
-    user: [0.0, 0.0, 1.0, 1.0],
-}
+var positions,
+    colors,
+    currTranslation,
+    currRotation,
+    currScale,
+    currDepth,
+    mouseLeftPressed,
+    mouseWheelPressed;
 
 
-var currTranslation = [0, 0, 0];
-var currRotation = [degToRad(90), degToRad(0), degToRad(0)];
-var currScale = [180,180,180];
-var currDepth = 1000;
 
 main();
 
-document.getElementById("simulateBtn").onclick = buttonClickHandler.bind(document);
+document.getElementById("simulateBtn").onclick = simulationButtonClickHandler.bind(document);
+document.getElementById("resetSimulationBtn").onclick = resetButtonClickHandler.bind(document);
+
 
 document.querySelector("canvas").onmousedown = mouseDownHandler.bind(document);
 document.querySelector("canvas").onmouseup = mouseUpHandler.bind(document);
@@ -46,8 +41,6 @@ document.querySelector("canvas").onmouseleave = mouseLeaveHandler.bind(document)
 
 
 
-var mouseLeftPressed = false;
-var mouseWheelPressed = false;
 function mouseLeaveHandler(evt) {
     mouseLeftPressed = false;
     mouseWheelPressed = false;
@@ -105,43 +98,42 @@ function mouseMoveHandler(evt) {
     }
 }
 
-
-function buttonClickHandler() {
+function simulationButtonClickHandler() {
     document.getElementById("simulateBtn").disabled=true;
     //Phone
     var phone = {
-        filename: document.querySelector("#phoneSelector").value,
-        angle: Number(document.querySelector("#phoneAngle").value),
+        filename: document.getElementById("phoneSelector").value,
+        angle: Number(document.getElementById("phoneAngle").value),
         angleUnits: document.getElementById("phoneAngleUnits").value,
     }
 
     //Paraboloid
     var paraboloid = {
-        x: Number(document.querySelector("#paraboloidX").value),
-        y: Number(document.querySelector("#paraboloidY").value),
-        z: Number(document.querySelector("#paraboloidZ").value),
-        angle: Number(document.querySelector("#paraboloidAngle").value),
+        x: Number(document.getElementById("paraboloidX").value),
+        y: Number(document.getElementById("paraboloidY").value),
+        z: Number(document.getElementById("paraboloidZ").value),
+        angle: Number(document.getElementById("paraboloidAngle").value),
         angleUnits: document.getElementById("paraboloidAngleUnits").value,
     }
 
     //Slicing Plane
     var slicingPlane = {
-        height: Number(document.querySelector("#slicingPlaneHeight").value),
+        height: Number(document.getElementById("slicingPlaneHeight").value),
         heightUnits: document.getElementById("slicingPlaneHeightUnits").value,
-        angle: Number(document.querySelector("#slicingPlaneAngle").value),
+        angle: Number(document.getElementById("slicingPlaneAngle").value),
         angleUnits: document.getElementById("slicingPlaneAngleUnits").value,
     }
 
     //User Radius
     var userRadius = {
-        radius: Number(document.querySelector("#userRadius").value),
+        radius: Number(document.getElementById("userRadius").value),
         radiusUnits: document.getElementById("userRadiusUnits").value,
     }
 
     //Resolution
     var resolution = {
-        linear: Number(document.querySelector("#linearResolution").value),
-        angular: Number(document.querySelector("#angularResolution").value),
+        linear: Number(document.getElementById("linearResolution").value),
+        angular: Number(document.getElementById("angularResolution").value),
     }
 
     var payload = {
@@ -154,12 +146,39 @@ function buttonClickHandler() {
     getSimulation(payload);
 }
 
+function init() {
+    positions = {
+        phone: [],
+        paraboloid: [],
+        user: [],
+    };
+
+    colors = {
+        phone: [1.0, 0.0, 0.0, 1.0],
+        paraboloid: [0.0, 1.0, 0.0, 1.0],
+        user: [0.0, 0.0, 1.0, 1.0],
+    };
+
+    const canvas = document.getElementById("glViewport");
+    currTranslation = [canvas.clientWidth/2, canvas.clientHeight/2, 0];
+    currRotation = [degToRad(90), degToRad(0), degToRad(0)];
+    currScale = [180,180,180];
+    currDepth = 1000;
+
+    mouseLeftPressed = false;
+    mouseWheelPressed = false;
+}
+
+function resetButtonClickHandler() {
+    init();
+}
+
 
 //
 // start here
 //
 function main() {
-    const canvas = document.querySelector("#glViewport");
+    const canvas = document.getElementById("glViewport");
     // Initialize the GL context
     const gl = canvas.getContext("webgl");
 
@@ -169,7 +188,8 @@ function main() {
         return;
     }
 
-    currTranslation = [gl.canvas.clientWidth/2, gl.canvas.clientHeight/2, 0];
+    init();
+    
 
     const shaderProgram = initShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
 
@@ -185,18 +205,12 @@ function main() {
     }
 
     setInterval(() => {
-        // Set clear color to black, fully opaque
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clearDepth(1.0);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        // gl.enable(gl.MULTISAMPLE);
         gl.enable(gl.BLEND);
-        // gl.depthRange(0.0, 10000.0);
-        // gl.depthMask(false);
         gl.depthFunc(gl.LEQUAL);
-        // gl.depthFunc(gl.GEQUAL);
-        // gl.depthFunc(gl.EQUAL);
         
         // Clear the color buffer with specified clear color
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -327,9 +341,6 @@ function getSimulation(payload) {
         document.getElementById("simulateBtn").disabled=false;
     });
 }
-
-
-
 
 function degToRad(deg) {
     return deg*Math.PI/180;
