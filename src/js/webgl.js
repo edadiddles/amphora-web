@@ -30,11 +30,9 @@ var colors = {
 
 
 var currTranslation = [0, 0, 0];
-var currRotation = [degToRad(0), degToRad(0), degToRad(0)];
+var currRotation = [degToRad(90), degToRad(0), degToRad(0)];
 var currScale = [180,180,180];
 var currDepth = 1000;
-var nComponents = 3;
-var shouldNormalize = true;
 
 main();
 
@@ -50,11 +48,9 @@ document.querySelector("canvas").onmouseleave = mouseLeaveHandler.bind(document)
 
 var mouseLeftPressed = false;
 var mouseWheelPressed = false;
-var mouseRightPressed = false;
 function mouseLeaveHandler(evt) {
     mouseLeftPressed = false;
     mouseWheelPressed = false;
-    mouseRightPressed = false;
 }
 
 function mouseDownHandler(evt) {
@@ -64,9 +60,6 @@ function mouseDownHandler(evt) {
     else if(evt.which == 2) {
         mouseWheelPressed = true;
     }
-    else if(evt.which == 3) {
-        mouseRightPressed = true;
-    }
 }
 
 function mouseUpHandler(evt) {
@@ -75,9 +68,6 @@ function mouseUpHandler(evt) {
     }
     else if(evt.which == 2) {
         mouseWheelPressed = false;
-    }
-    else if(evt.which == 3) {
-        mouseRightPressed = false;
     }
 }
 
@@ -101,24 +91,14 @@ function mouseWheelHandler(evt) {
 function mouseMoveHandler(evt) {
     if(evt.ctrlKey) {
         if(mouseLeftPressed) {
-            currRotation[0] += evt.movementX/100;
-        }
-        else if(mouseRightPressed) {
-            currRotation[1] += evt.movementY/100;
-        }
-        if(mouseWheelPressed) {
-            currRotation[2] += evt.movementX;
+            currRotation[1] += evt.movementX/100;
         }
     }else {
         if(mouseLeftPressed) {
-            currRotation[1] += evt.movementX/100;
-            currRotation[0] += evt.movementY/100;
-        }
-        else if(mouseRightPressed) {
             currRotation[2] += evt.movementX/100;
             currRotation[0] += evt.movementY/100;
         }
-        if(mouseWheelPressed) {
+        else if(mouseWheelPressed) {
             currTranslation[0] += evt.movementX;
             currTranslation[1] += evt.movementY;
         }
@@ -304,9 +284,9 @@ function initPositionBuffer(gl, verticies) {
 
 function drawScene(gl, programInfo, buffers, positions, color, matrix) {
     {
-        const numComponents = nComponents;
+        const numComponents = 3;
         const type = gl.FLOAT;
-        const normalize = shouldNormalize;
+        const normalize = true;
         const stride = 0;
         const offset = 0;
         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
